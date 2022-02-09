@@ -8,7 +8,7 @@ def getfile():
     return file
 
 
-def getset(filename):
+def getset(filename, d):
 
     set = []
     with open(filename ,'r') as csvfile:
@@ -20,12 +20,24 @@ def getset(filename):
                 if float(el):
                     col.append(el)
             #print(col)
-            set.append([float(col[0]), float(col[1])])
+
+            cor = []
+            for k in range(d):
+                cor.append(float(col[k]))
+            set.append(cor)
+    #print(set)
     return set
 
 
 def distance(x,y):
-    return (x[0] - y[0])**2 + (x[1] - y[1])**2
+
+    dis = 0
+
+    for i in range(len(x)):
+        dis += (x[i] - y[i])**2
+
+    #print(dis)
+    return dis
 
 def formcluster(centr, set):
 
@@ -45,9 +57,10 @@ def kmeans(set, k):
     fig, ax = plt.subplots()
     ax.scatter([], [])
     centr = []
-    centr = random.sample(set, k)
+    #centr = random.sample(set, k)
+    centr = set[:k]
 
-    print(centr)
+    #print(centr)
     temp = []
 
     while True:
@@ -55,7 +68,12 @@ def kmeans(set, k):
         #print(cl)
         temp = []
         for i in cl:
-            temp.append(list(np.mean(i, axis = 0)))
+            #print(len(i))
+            if len(i) == 0:
+                temp.append(centr[cl.index(i)])
+                #print("hit")
+            else:
+                temp.append(list(np.mean(i, axis = 0)))
 
         if centr == temp:
             break
@@ -75,25 +93,29 @@ def kmeans(set, k):
         #    ax.scatter(x, y, s=400, color = 'black', marker = 'X')
 
 
-    #print(centr)
+    print(centr)
 
-    for i,j in zip(cl, ['red', 'blue', 'orange', 'green', 'violet', 'yellow', 'indigo', 'lightgreen']):
-        for x,y in i:
-            ax.scatter(x, y, s = 25, color = j)
+    color = ['red', 'blue', 'orange', 'green', 'violet', 'yellow', 'indigo', 'lightgreen']
 
-    for x,y in centr:
-        ax.scatter(x, y, s=100, color = 'black', marker = 'X')
+    if len(set[0]) == 2:
+        for j,i in enumerate(cl):
+            for x,y in i:
+                ax.scatter(x, y, s = 25, color = color[j%8])
 
 
-    plt.waitforbuttonpress()
-    #fig.canvas.flush_events()
-    #plt.pause(0.1)
+        for x,y in centr:
+            ax.scatter(x, y, s=100, color = 'black', marker = 'X')
 
-    plt.show()
+
+        plt.waitforbuttonpress()
+
+        plt.show()
 
 filename = getfile()
-dataset = getset(filename)
 #print(dataset)
 print("Enter K value")
 k = int(input())
+print("Enter Dimension")
+dim = int(input())
+dataset = getset(filename, dim)
 kmeans(dataset,k)
